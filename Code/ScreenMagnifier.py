@@ -1,7 +1,7 @@
-import tkinter as tk
+from tkinter import Toplevel, Canvas, Frame, Button, Tk, TclError
 from tkinter.messagebox import showinfo
 from PIL import ImageGrab, ImageTk, Image
-import pyautogui
+from pyautogui import position
 from keyboard import add_hotkey
 from sys import exit
 import os
@@ -11,7 +11,7 @@ class ScreenMagnifier:
         def reini():
             self.scale = 40
 
-        self.root = tk.Toplevel()
+        self.root = Toplevel()
         self.root.title("Экранная лупа")
         self.root.attributes('-topmost', True)
         self.root.overrideredirect(True)
@@ -25,7 +25,7 @@ class ScreenMagnifier:
         self.size = 400
         self.update_delay = 50
         
-        self.canvas = tk.Canvas(self.root, width=self.size, height=self.size, 
+        self.canvas = Canvas(self.root, width=self.size, height=self.size, 
                                bg='white', highlightthickness=0)
         self.canvas.grid()      
         
@@ -39,7 +39,7 @@ class ScreenMagnifier:
         
         self.scale = 40
         
-        ins = tk.Frame(self.root, bg='white', relief='flat', height=30)
+        ins = Frame(self.root, bg='white', relief='flat', height=30)
         
         button_style = {
             'bg': '#0078D4', 
@@ -63,9 +63,9 @@ class ScreenMagnifier:
             'cursor': 'hand2'
         }
         
-        tk.Button(ins, text="Вернуть масштаб", command=reini, **button_style).grid(column=0, row=0, padx=3, sticky="ns")
-        tk.Button(ins, text="Помощь", command=lambda : showinfo("Подсказка", "После нажатия ПКМ приложение останется в режиме ожидания. \nДля запуска нажмите alt + 2\nДля полного закрытия нажмите 'Выйти'\nДля изменеия масштаба покрутите колесико мыши, наведя курсор на окно с лупой"), **button_style).grid(column=1, row=0, padx=3, sticky="ns")
-        tk.Button(ins, text="Выйти", command=lambda: exit(0), **exbutton_style).grid(column=2, row=0, padx=3, sticky="ew")
+        Button(ins, text="Вернуть масштаб", command=reini, **button_style).grid(column=0, row=0, padx=3, sticky="ns")
+        Button(ins, text="Помощь", command=lambda : showinfo(f"Подсказка", "После нажатия ПКМ приложение останется в режиме ожидания. \nДля запуска нажмите {hotkey}\nДля полного закрытия нажмите 'Выйти'\nДля изменеия масштаба покрутите колесико мыши, наведя курсор на окно с лупой"), **button_style).grid(column=1, row=0, padx=3, sticky="ns")
+        Button(ins, text="Выйти", command=lambda: exit(0), **exbutton_style).grid(column=2, row=0, padx=3, sticky="ew")
         
         
         
@@ -95,7 +95,7 @@ class ScreenMagnifier:
         
     def update(self):
         try:
-            x, y = pyautogui.position()
+            x, y = position()
             
             bbox = (x - self.scale, y - self.scale, x + self.scale, y + self.scale)
             screenshot = ImageGrab.grab(bbox)
@@ -113,14 +113,28 @@ class ScreenMagnifier:
             self.canvas.create_image(self.size//2, self.size//2, image=self.cursor)
             
             self.root.after(self.update_delay, self.update)
-        except tk.TclError:
+        except TclError:
             pass
    
 
 if __name__ == "__main__":
-    root = tk.Tk()
-    root.withdraw()  
-    showinfo("Внимание!", "Экранная лупа в режиме ожидания. Нажмите alt + 2 для открытия.")
-    add_hotkey("alt + 2", ScreenMagnifier)
+    root = Tk()
+    root.withdraw()
+    hotkey = ""
+    try:
+        f=open("hk.txt", "r")
+        hotkey = f.read()
+        f.close()
+
+    except:
+        hotkey = "alt + 1"
+
+        f=open("hk.txt", "w")
+        f.write(hotkey)
+        f.close()
+
+
+    showinfo("Внимание!", f"Экранная лупа в режиме ожидания. Нажмите {hotkey} для открытия.")
+    add_hotkey(hotkey, ScreenMagnifier)
     
     root.mainloop()
