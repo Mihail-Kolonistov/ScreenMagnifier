@@ -11,6 +11,7 @@ class ScreenMagnifier:
         def reini():
             self.scale = 40
 
+        
         self.root = Toplevel()
         self.root.title("Экранная лупа")
         self.root.attributes('-topmost', True)
@@ -90,7 +91,7 @@ class ScreenMagnifier:
                 self.scale -= 10
         
             
-    def close(self, event):
+    def close(self):
         self.root.destroy()
         
     def update(self):
